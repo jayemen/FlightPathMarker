@@ -18,7 +18,7 @@ namespace FlightPathMarker
         private const float WIDTH_ANGLE = 0.002f;
         private const float LENGTH_ANGLE = 0.01f;
         private const float CROSSHAIR_DISTANCE = 1.0f;
-        private const float SLERP_MS = 250;
+        private const float SLERP_MS = 150;
 
         private Vector3? lastOffset;
         private long lastTick = 0;
