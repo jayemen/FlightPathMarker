@@ -34,8 +34,7 @@ namespace FlightPathMarker
                 lastOffset = null;
                 return;
             }
-            
-            
+
             var offset = physics.LinearVelocity;
             if (offset.LengthSquared() == 0)
             {
@@ -45,32 +44,22 @@ namespace FlightPathMarker
 
             offset.Normalize();
             offset *= CROSSHAIR_DISTANCE;
-            
+
             if (lastOffset.HasValue)
             {
                 // (100ns/tick) * (1 slerp / SLERP_MS) * (0.0001 ms / 100 ns) = (0.0001 ms / SLERP_MS) slerps/tick
                 var frac = 0.0001f / SLERP_MS * tickDelta;
+                offset = Matrix.Slerp(Matrix.CreateWorld(lastOffset.Value), Matrix.CreateWorld(offset), frac).Translation;
 
-                Slerp(
-                    from: lastOffset.Value, 
-                    to: offset, 
-                    frac: frac, 
-                    output: ref offset);
-
-                offset.Normalize();
+                // Further damp, by adding some 'momentum' to the crosshair.
+                
             }
 
-            
             DrawCross(offset, Color.LightGreen);
             DrawCross(-offset, Color.Red);
 
             lastTick = tick;
             lastOffset = offset;
-        }
-
-        private void Slerp(Vector3 from, Vector3 to, float frac, ref Vector3 output)
-        {
-            output = (to - from) * frac + from;
         }
 
         private void DrawCross(Vector3 offset, Color color)
@@ -85,12 +74,12 @@ namespace FlightPathMarker
             var length = camera.FovWithZoom * LENGTH_ANGLE;
 
             MyTransparentGeometry.AddBillboardOriented(
-                material: "SquareIgnoreDepth", 
+                material: "SquareIgnoreDepth",
                 color: color,
-                origin: camera.WorldMatrix.Translation + offset, 
-                leftVector: camera.WorldMatrix.Left, 
-                upVector: camera.WorldMatrix.Up, 
-                width: width, 
+                origin: camera.WorldMatrix.Translation + offset,
+                leftVector: camera.WorldMatrix.Left,
+                upVector: camera.WorldMatrix.Up,
+                width: width,
                 height: length);
 
             MyTransparentGeometry.AddBillboardOriented(
