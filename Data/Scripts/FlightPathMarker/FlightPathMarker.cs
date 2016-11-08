@@ -31,11 +31,11 @@ namespace FlightPathMarker
 
             if (MyAPIGateway.Input.GetGameControl(MyControlsSpace.SECONDARY_TOOL_ACTION).IsNewPressed())
             {
-                var head = ControlledEntity.GetHeadMatrix(true, true, false);
+                var head = ControlledEntity.GetHeadMatrix(true, true, true, true);
 
                 MyAPIGateway.Physics.CastRay(
-                    head.Translation + head.Forward * 10.0f,
-                    head.Translation + head.Forward * 10000.0f,
+                    head.Translation,
+                    head.Translation + (head.Forward * 100000.0f),
                     traceBuffer);
 
                 bool hadTarget = target != null;
@@ -84,6 +84,14 @@ namespace FlightPathMarker
 
             DrawFlightPathMarker(velocity, Color.LightGreen);
             DrawFlightPathMarker(-velocity, Color.Red);
+
+            if (MyAPIGateway.Input.GetGameControl(MyControlsSpace.SECONDARY_TOOL_ACTION).IsPressed()) {
+                var head = ControlledEntity.GetHeadMatrix(true, true, true, true);
+
+                head.Translation += head.Forward;
+                var color = Color.Yellow;
+                MySimpleObjectDraw.DrawTransparentSphere(ref head, .05f, ref color, MySimpleObjectRasterizer.SolidAndWireframe, 8);
+            }
         }
 
         private void DrawFlightPathMarker(Vector3 direction, Color color)
@@ -93,7 +101,7 @@ namespace FlightPathMarker
                 return;
             }
 
-            var head = ControlledEntity.GetHeadMatrix(true, true);
+            var head = ControlledEntity.GetHeadMatrix(true, true, true, true);
             var width = Camera.FovWithZoom * WIDTH_ANGLE;
 
             MyTransparentGeometry.AddBillboardOriented(
