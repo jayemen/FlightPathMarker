@@ -1,68 +1,62 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRageMath;
 using VRage.Game;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 
 namespace FlightPathMarker
 {
     [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
     public class FlightPathMarker : MySessionComponentBase
     {
-        private const float WIDTH_ANGLE = 0.002f;
-        private const float LENGTH_ANGLE = 0.01f;
-        private const float CROSSHAIR_DISTANCE = 1.0f;
-        private const float SLERP_MS = 150;
-
-        private Vector3? lastOffset;
-        private long lastTick = 0;
+        private const float WIDTH_ANGLE = 0.0004f;
+        private const float CROSSHAIR_DISTANCE = 0.1f;
+        private const int AVERAGE_SAMPLES = 5;
+        private Vector3[] velocities = new Vector3[AVERAGE_SAMPLES];
+        private int nextAverage = 0;
 
         public override void Draw()
         {
-            var tick = DateTime.UtcNow.Ticks;
-            var tickDelta = tick - lastTick;
-
             var physics = ShipPhysics();
             if (physics == null)
             {
-                lastOffset = null;
                 return;
             }
 
-            var offset = physics.LinearVelocity;
-            if (offset.LengthSquared() == 0)
+            var camera = MyAPIGateway.Session?.Camera;
+            if (camera == null)
             {
-                lastOffset = null;
                 return;
             }
 
-            offset.Normalize();
-            offset *= CROSSHAIR_DISTANCE;
-
-            if (lastOffset.HasValue)
+            var velocity = UpdateAverageVelocity(physics.LinearVelocity);
+            if (Vector3.IsZero(velocity))
             {
-                // (100ns/tick) * (1 slerp / SLERP_MS) * (0.0001 ms / 100 ns) = (0.0001 ms / SLERP_MS) slerps/tick
-                var frac = 0.0001f / SLERP_MS * tickDelta;
-                offset = Matrix.Slerp(Matrix.CreateWorld(lastOffset.Value), Matrix.CreateWorld(offset), frac).Translation;
-
-                // Further damp, by adding some 'momentum' to the crosshair.
-                
+                return;
             }
 
-            DrawCross(offset, Color.LightGreen);
-            DrawCross(-offset, Color.Red);
+            velocity.Normalize();
 
-            lastTick = tick;
-            lastOffset = offset;
+            DrawCrosshair(velocity, Color.LightGreen);
+            DrawCrosshair(-velocity, Color.Red);
         }
 
-        private void DrawCross(Vector3 offset, Color color)
+        private Vector3 UpdateAverageVelocity(Vector3 velocity)
+        {
+            velocities[nextAverage] = velocity;
+            nextAverage = (nextAverage + 1) % AVERAGE_SAMPLES;
+
+            var average = velocities[0];
+
+            for (var i = 1; i < AVERAGE_SAMPLES; ++i)
+            {
+                average += velocities[i];
+            }
+
+            return average / AVERAGE_SAMPLES;
+        }
+
+        private void DrawCrosshair(Vector3 direction, Color color)
         {
             var camera = MyAPIGateway.Session?.Camera;
             if (camera == null)
@@ -71,25 +65,14 @@ namespace FlightPathMarker
             }
 
             var width = camera.FovWithZoom * WIDTH_ANGLE;
-            var length = camera.FovWithZoom * LENGTH_ANGLE;
-
+            
             MyTransparentGeometry.AddBillboardOriented(
-                material: "SquareIgnoreDepth",
+                material: "WhiteDot",
                 color: color,
-                origin: camera.WorldMatrix.Translation + offset,
+                origin: camera.WorldMatrix.Translation + direction * CROSSHAIR_DISTANCE,
                 leftVector: camera.WorldMatrix.Left,
                 upVector: camera.WorldMatrix.Up,
-                width: width,
-                height: length);
-
-            MyTransparentGeometry.AddBillboardOriented(
-               material: "SquareIgnoreDepth",
-               color: color,
-               origin: camera.WorldMatrix.Translation + offset,
-               leftVector: camera.WorldMatrix.Left,
-               upVector: camera.WorldMatrix.Up,
-               width: length,
-               height: width);
+                radius: width);
         }
 
         private MyPhysicsComponentBase ShipPhysics()
