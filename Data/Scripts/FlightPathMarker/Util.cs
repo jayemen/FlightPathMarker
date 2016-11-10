@@ -41,7 +41,7 @@ namespace FlightPathMarker
         {
             get
             {
-                return (ControlledEntity.Entity as IMyCockpit);
+                return (ControlledEntity?.Entity as IMyCockpit);
             }
         }
 

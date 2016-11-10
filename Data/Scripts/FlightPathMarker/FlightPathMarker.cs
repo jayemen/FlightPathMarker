@@ -48,7 +48,7 @@ namespace FlightPathMarker
             
             var velocity = util.PlayerShip.Physics.LinearVelocity;
 
-            if (target != null)
+            if (target?.Physics != null)
             {
                 velocity -= target.Physics.LinearVelocity;
             }
