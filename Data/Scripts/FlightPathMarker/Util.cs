@@ -11,7 +11,7 @@ namespace FlightPathMarker
     public class Util
     {
         private List<IHitInfo> traceBuffer = new List<IHitInfo>();
-        
+
         public T LookingAt<T>()
             where T : class, IMyEntity
         {
@@ -25,23 +25,31 @@ namespace FlightPathMarker
             return traceBuffer
                 .Select(info => info.HitEntity)
                 .OfType<T>()
-                .Where(hit => hit != ControlledEntity && hit != PlayerShip)
-                .FirstOrDefault() as T;
+                .Where(hit => hit != ControlledEntity && hit != CameraOwner)
+                .FirstOrDefault();
         }
 
-        public IMyCubeGrid PlayerShip
+        public IMyEntity CameraOwner
         {
             get
             {
-                return PlayerCockpit?.CubeGrid;
-            }
-        }
+                var cameraController = MyAPIGateway.Session?.CameraController;
 
-        public IMyCockpit PlayerCockpit
-        {
-            get
-            {
-                return (ControlledEntity?.Entity as IMyCockpit);
+                if (cameraController == null) {
+                    return null;
+                }
+
+                var grid = (cameraController as IMyCubeBlock)?.CubeGrid;
+                
+                if (grid != null) {
+                    return grid;
+                }
+                
+                if (ControlledEntity?.Entity == cameraController && ControlledEntity.EnabledThrusts) {
+                    return ControlledEntity.Entity;
+                }
+
+                return null;
             }
         }
 
@@ -49,7 +57,7 @@ namespace FlightPathMarker
         {
             get
             {
-                return MyAPIGateway.Session.Player.Controller.ControlledEntity;
+                return Player?.Controller?.ControlledEntity;
             }
         }
 
@@ -57,27 +65,39 @@ namespace FlightPathMarker
         {
             get
             {
-                return MyAPIGateway.Session.Camera;
+                return MyAPIGateway.Session?.Camera;
             }
         }
 
         public MatrixD CrosshairMatrix()
         {
+            if (Camera == null)
+            {
+                return MatrixD.Identity;
+            }
+
             var head = Camera.WorldMatrix;
 
-            if (PlayerCockpit != null && MyAPIGateway.Session.CameraController is IMyShipController) {
+            if (MyAPIGateway.Session?.CameraController is IMyShipController)
+            {
                 // See the use of hardcoded DEFAULT_FPS_CAMERA_X_ANGLE variable in MyCockpit.cs in the game source code.
                 head.Forward = Vector3D.Transform(head.Forward, MatrixD.CreateFromAxisAngle(head.Right, MathHelper.ToRadians(10)));
             }
-            
+
             return head;
+        }
+
+        public IMyPlayer Player {
+            get {
+                return MyAPIGateway.Session?.Player;
+            }
         }
 
         public bool GameReady
         {
-            get 
+            get
             {
-                return MyAPIGateway.Utilities != null && MyAPIGateway.Session != null; 
+                return MyAPIGateway.Utilities != null && MyAPIGateway.Session != null;
             }
         }
     }
