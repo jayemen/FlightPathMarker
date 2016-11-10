@@ -4,6 +4,7 @@ using VRage.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
+using VRageMath;
 
 namespace FlightPathMarker
 {
@@ -14,7 +15,7 @@ namespace FlightPathMarker
         public T LookingAt<T>()
             where T : class, IMyEntity
         {
-            var head = ControlledEntity.GetHeadMatrix(true, true, true);
+            var head = CrosshairMatrix();
 
             MyAPIGateway.Physics.CastRay(
                     from: head.Translation,
@@ -36,11 +37,11 @@ namespace FlightPathMarker
             }
         }
 
-        public IMyCubeBlock PlayerCockpit
+        public IMyCockpit PlayerCockpit
         {
             get
             {
-                return (ControlledEntity.Entity as IMyCubeBlock);
+                return (ControlledEntity.Entity as IMyCockpit);
             }
         }
 
@@ -58,6 +59,18 @@ namespace FlightPathMarker
             {
                 return MyAPIGateway.Session.Camera;
             }
+        }
+
+        public MatrixD CrosshairMatrix()
+        {
+            var head = Camera.WorldMatrix;
+
+            if (PlayerCockpit != null && MyAPIGateway.Session.CameraController is IMyShipController) {
+                // See the use of hardcoded DEFAULT_FPS_CAMERA_X_ANGLE variable in MyCockpit.cs in the game source code.
+                head.Forward = Vector3D.Transform(head.Forward, MatrixD.CreateFromAxisAngle(head.Right, MathHelper.ToRadians(10)));
+            }
+            
+            return head;
         }
 
         public bool GameReady

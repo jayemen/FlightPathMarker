@@ -61,23 +61,13 @@ namespace FlightPathMarker
             }
 
             velocity.Normalize();
-
             DrawFlightPathMarker(velocity, Color.LightGreen);
             DrawFlightPathMarker(-velocity, Color.Red);
-
-            if (MyAPIGateway.Input.GetGameControl(MyControlsSpace.SECONDARY_TOOL_ACTION).IsPressed())
-            {
-                var head = util.ControlledEntity.GetHeadMatrix(true, true, true);
-                var yellow = Color.Yellow;
-
-                head.Translation += head.Forward;
-                MySimpleObjectDraw.DrawTransparentSphere(ref head, .05f, ref yellow, MySimpleObjectRasterizer.SolidAndWireframe, 8);
-            }
         }
 
         private void DrawFlightPathMarker(Vector3 direction, Color color)
         {
-            var head = util.ControlledEntity.GetHeadMatrix(true, true, true);
+            var head = util.Camera.WorldMatrix;
             var width = util.Camera.FovWithZoom * WIDTH_ANGLE;
 
             MyTransparentGeometry.AddBillboardOriented(
