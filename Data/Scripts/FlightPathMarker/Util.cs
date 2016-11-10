@@ -1,5 +1,4 @@
 using Sandbox.ModAPI;
-using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Game.ModAPI.Interfaces;

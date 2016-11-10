@@ -2,11 +2,8 @@ using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRageMath;
 using VRage.Game.ModAPI;
-using VRage.Input;
 using Sandbox.Game;
-using VRage.ModAPI;
 using VRage.Game;
-using VRage.Game.ModAPI.Interfaces;
 
 namespace FlightPathMarker
 {
