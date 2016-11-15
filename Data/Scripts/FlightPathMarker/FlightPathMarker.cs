@@ -19,7 +19,7 @@ namespace FlightPathMarker
         
         public override void UpdateAfterSimulation()
         {
-            if (util.CameraOwner == null)
+            if (util.CameraGrid == null)
             {
                 return;
             }
@@ -42,11 +42,11 @@ namespace FlightPathMarker
 
         public override void Draw()
         {
-            if (!util.GameReady || util.CameraOwner?.Physics == null) {
+            if (!util.GameReady || util.CameraGrid?.Physics == null) {
                 return;
             }
             
-            var velocity = util.CameraOwner.Physics.LinearVelocity;
+            var velocity = util.CameraGrid.Physics.LinearVelocity;
 
             if (target?.Physics != null)
             {

@@ -25,31 +25,15 @@ namespace FlightPathMarker
             return traceBuffer
                 .Select(info => info.HitEntity)
                 .OfType<T>()
-                .Where(hit => hit != ControlledEntity && hit != CameraOwner)
+                .Where(hit => hit != ControlledEntity && hit != CameraGrid)
                 .FirstOrDefault();
         }
 
-        public IMyEntity CameraOwner
+        public IMyEntity CameraGrid
         {
             get
             {
-                var cameraController = MyAPIGateway.Session?.CameraController;
-
-                if (cameraController == null) {
-                    return null;
-                }
-
-                var grid = (cameraController as IMyCubeBlock)?.CubeGrid;
-                
-                if (grid != null) {
-                    return grid;
-                }
-                
-                if (ControlledEntity?.Entity == cameraController && ControlledEntity.EnabledThrusts) {
-                    return ControlledEntity.Entity;
-                }
-
-                return null;
+                return (MyAPIGateway.Session?.CameraController as IMyCubeBlock)?.CubeGrid;
             }
         }
 
