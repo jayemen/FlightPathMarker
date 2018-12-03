@@ -60,19 +60,13 @@ namespace FlightPathMarker
                 return MatrixD.Identity;
             }
 
-            var head = Camera.WorldMatrix;
-
-            if (MyAPIGateway.Session?.CameraController is IMyShipController)
-            {
-                // See the use of hardcoded DEFAULT_FPS_CAMERA_X_ANGLE variable in MyCockpit.cs in the game source code.
-                head.Forward = Vector3D.Transform(head.Forward, MatrixD.CreateFromAxisAngle(head.Right, MathHelper.ToRadians(10)));
-            }
-
-            return head;
+            return Camera.WorldMatrix;
         }
 
-        public IMyPlayer Player {
-            get {
+        public IMyPlayer Player
+        {
+            get
+            {
                 return MyAPIGateway.Session?.Player;
             }
         }

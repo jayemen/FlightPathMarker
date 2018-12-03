@@ -4,6 +4,7 @@ using VRageMath;
 using VRage.Game.ModAPI;
 using Sandbox.Game;
 using VRage.Game;
+using VRage.Utils;
 
 namespace FlightPathMarker
 {
@@ -16,7 +17,7 @@ namespace FlightPathMarker
         private IMyCubeGrid target;
         readonly private AveragedVector averageVelocity = new AveragedVector(AVERAGE_SAMPLES);
         readonly private Util util = new Util();
-        
+
         public override void UpdateAfterSimulation()
         {
             if (util.CameraGrid == null)
@@ -42,10 +43,11 @@ namespace FlightPathMarker
 
         public override void Draw()
         {
-            if (!util.GameReady || util.CameraGrid?.Physics == null) {
+            if (!util.GameReady || util.CameraGrid?.Physics == null)
+            {
                 return;
             }
-            
+
             var velocity = util.CameraGrid.Physics.LinearVelocity;
 
             if (target?.Physics != null)
@@ -54,7 +56,7 @@ namespace FlightPathMarker
             }
 
             velocity = averageVelocity.Update(velocity);
-            
+
             if (Vector3.IsZero(velocity))
             {
                 return;
@@ -71,7 +73,7 @@ namespace FlightPathMarker
             var width = util.Camera.FovWithZoom * WIDTH_ANGLE;
 
             MyTransparentGeometry.AddBillboardOriented(
-                material: "WhiteDot",
+                material: MyStringId.GetOrCompute("WhiteDot"),
                 color: color,
                 origin: head.Translation + direction * CROSSHAIR_DISTANCE,
                 leftVector: head.Left,
